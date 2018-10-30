@@ -1,6 +1,7 @@
 module Main where
 
 import ISL
+import Gen
 
 example1 :: String
 example1 = unlines
@@ -59,3 +60,5 @@ main = do
 
 
   ctxFree ctx
+
+  gen
