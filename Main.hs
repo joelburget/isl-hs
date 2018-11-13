@@ -2,6 +2,7 @@ module Main where
 
 import ISL
 import Gen
+import InlineBindings
 
 example1 :: String
 example1 = unlines
@@ -13,6 +14,11 @@ example1 = unlines
 
 main :: IO ()
 main = do
+  putStrLn "inline 1:"
+  test1
+  putStrLn "inline 2:"
+  test2
+
   ctx <- ctxAlloc
 
 
