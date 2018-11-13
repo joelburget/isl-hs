@@ -16,14 +16,11 @@ extra-source-files:  CHANGELOG.md
 cabal-version:       >=1.10
 
 library
-  exposed-modules: ISL, Gen, InlineBindings
+  exposed-modules: ISL, InlineBindings
   -- other-modules:
   -- other-extensions:
   build-depends:
       base >=4.11 && <4.12
-    , clang-pure >= 0.2
-    , lens
-    , bytestring
     , inline-c
     , containers
     , template-haskell

@@ -4,8 +4,6 @@
 
 module InlineBindings (test1, test2) where
 
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as BS
 import Foreign.C
 import Foreign.C.String
 import qualified Language.C.Inline as C

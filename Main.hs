@@ -1,7 +1,6 @@
 module Main where
 
 import ISL
-import Gen
 import InlineBindings
 
 example1 :: String
