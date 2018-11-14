@@ -1,5 +1,5 @@
 { mkDerivation, base, c2hs, containers, inline-c, isl, stdenv
-, template-haskell
+, template-haskell, gmp, pkgconfig
 }:
 mkDerivation {
   pname = "isl-hs";
@@ -10,8 +10,8 @@ mkDerivation {
   libraryHaskellDepends = [
     base containers inline-c template-haskell
   ];
-  librarySystemDepends = [ isl ];
-  libraryToolDepends = [ c2hs ];
+  librarySystemDepends = [ isl gmp ];
+  libraryToolDepends = [ c2hs pkgconfig ];
   executableHaskellDepends = [ base ];
   license = stdenv.lib.licenses.bsd3;
 
