@@ -6,7 +6,7 @@ In-progress Haskell bindings to the integer set library.
 
 * Run `nix-build release.nix`
 
-# Development
+## Development
 
 * Enter a development environment: `nix-shell`
 * Start a REPL: `cabal repl lib:isl-hs`
