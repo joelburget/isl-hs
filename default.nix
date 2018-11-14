@@ -1,5 +1,5 @@
 { mkDerivation, base, c2hs, containers, inline-c, isl, stdenv
-, template-haskell, gmp, pkgconfig
+, template-haskell, gmp
 }:
 mkDerivation {
   pname = "isl-hs";
@@ -11,7 +11,7 @@ mkDerivation {
     base containers inline-c template-haskell
   ];
   librarySystemDepends = [ isl gmp ];
-  libraryToolDepends = [ c2hs pkgconfig ];
+  libraryToolDepends = [ c2hs ];
   executableHaskellDepends = [ base ];
   license = stdenv.lib.licenses.bsd3;
 
@@ -21,4 +21,10 @@ mkDerivation {
   # The above line fixes the normal build, but we get a similar error while
   # building haddhocks. We don't need them yet, so we just disable for now:
   doHaddock = false;
+
+  # Set the environment for ghci to find our shared libraries:
+  shellHook = ''
+    export LD_LIBRARY_PATH+=:${isl}/lib
+    export LD_LIBRARY_PATH+=:${gmp}/lib
+  '';
 }
