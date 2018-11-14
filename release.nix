@@ -4,9 +4,9 @@ let
       haskellPackages = pkgs.haskellPackages.override {
         overrides = haskellPackagesNew: haskellPackagesOld: rec {
           isl-hs =
-          haskellPackagesNew.callPackage ./default.nix {
-            isl = pkgs.callPackage ./isl.nix { };
-          };
+            haskellPackagesNew.callPackage ./default.nix {
+              isl = pkgs.callPackage ./isl.nix { };
+            };
         };
       };
     };
