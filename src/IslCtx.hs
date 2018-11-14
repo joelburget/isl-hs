@@ -10,6 +10,7 @@ import           Language.C.Inline.Context
 import qualified Language.C.Types as C
 import ISL (Map, Ctx, Set, BasicSet, LocalSpace, Space, Constraint, ctxAlloc, mapFree)
 import qualified Data.Map as Map
+import           Data.Monoid ((<>))
 import qualified Language.Haskell.TH as TH
 
 islCtx :: C.Context

@@ -17,10 +17,10 @@ cabal-version:       >=1.10
 
 library
   exposed-modules: ISL, InlineBindings
-  -- other-modules:
+  other-modules: IslCtx
   -- other-extensions:
   build-depends:
-      base >=4.11 && <4.12
+      base <5
     , inline-c
     , containers
     , template-haskell
