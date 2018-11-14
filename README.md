@@ -9,4 +9,8 @@ In-progress Haskell bindings to the integer set library.
 ## Development
 
 * Enter a development environment: `nix-shell`
+
+Then:
+
 * Start a REPL: `cabal repl lib:isl-hs`
+* Run ghcid: `ghcid --command "cabal repl lib:isl-hs"`
