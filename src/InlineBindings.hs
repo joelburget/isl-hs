@@ -5,6 +5,9 @@
 module InlineBindings
   ( test1
   , test2
+
+  , IslData(copy)
+
   , unsafeSetIntersect
   , setIntersect
   , unsafeSetUnion
@@ -45,6 +48,21 @@ C.include "<isl/constraint.h>"
 C.include "<isl/map.h>"
 C.include "<isl/set.h>"
 C.include "<isl/space.h>"
+
+class IslData a where
+  copy :: Ptr a -> Ptr a
+
+instance IslData Set where
+  copy = setCopy
+
+setCopy :: Ptr Set -> Ptr Set
+setCopy set = [C.pure| isl_set* { isl_set_copy($(isl_set* set)) } |]
+
+instance IslData Space where
+  copy = spaceCopy
+
+spaceCopy :: Ptr Space -> Ptr Space
+spaceCopy space = [C.pure| isl_space* { isl_space_copy($(isl_space* space)) } |]
 
 example1 :: String
 example1 = unlines
@@ -108,9 +126,6 @@ unsafeSetSubtract set1 set2 = [C.pure| isl_set* {
 
 setSubtract :: Ptr Set -> Ptr Set -> Ptr Set
 setSubtract set1 set2 = unsafeSetSubtract (setCopy set1) (setCopy set2)
-
-setCopy :: Ptr Set -> Ptr Set
-setCopy set = [C.pure| isl_set* { isl_set_copy($(isl_set* set)) } |]
 
 -- | Create an empty set
 setEmpty :: Ptr Space -> Ptr Set
@@ -191,6 +206,3 @@ unsafeSetProjectOut set ty first n =
 
 setProjectOut :: Ptr Set -> DimType -> CUInt -> CUInt -> Ptr Set
 setProjectOut set ty first n = unsafeSetProjectOut (setCopy set) ty first n
-
-spaceCopy :: Ptr Space -> Ptr Space
-spaceCopy space = [C.pure| isl_space* { isl_space_copy($(isl_space* space)) } |]
