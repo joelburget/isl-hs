@@ -51,6 +51,10 @@ data Constraint
 type PtrConstraint = Ptr Constraint
 {#pointer *isl_constraint as PtrConstraint -> Constraint nocode #}
 
+data Id
+type PtrId = Ptr Id
+{#pointer *isl_id as PtrId -> Id nocode #}
+
 {#fun isl_map_free as mapFree { id `Ptr Map' } -> `()' #}
 {#fun isl_set_free as setFree { id `Ptr Set' } -> `()' #}
 {#fun isl_set_read_from_str as setReadFromStr
