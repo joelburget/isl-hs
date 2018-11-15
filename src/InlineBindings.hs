@@ -5,20 +5,29 @@
 module InlineBindings
   ( test1
   , test2
+  , unsafeSetIntersect
   , setIntersect
+  , unsafeSetUnion
   , setUnion
+  , unsafeSetSubtract
   , setSubtract
   , setCopy
   , setEmpty
+  , unsafeSetUniverse
   , setUniverse
   , setGetSpace
   , setFree
   , setNBasicSet
+  , unsafeSetCoalesce
   , setCoalesce
+  , unsafeSetParams
   , setParams
   , setComplement
   , setGetDimId
+  , unsafeSetProjectOut
   , setProjectOut
+
+  , spaceCopy
   ) where
 
 import Foreign.Ptr
@@ -73,20 +82,32 @@ test2 = withCString example1 $ \example1' -> do
   mapFree m
   print m
 
-setIntersect :: Ptr Set -> Ptr Set -> Ptr Set
-setIntersect set1 set2 = [C.pure| isl_set* {
+-- __isl_take: can no longer be used
+-- __isl_keep: only used temporarily
+
+unsafeSetIntersect :: Ptr Set -> Ptr Set -> Ptr Set
+unsafeSetIntersect set1 set2 = [C.pure| isl_set* {
   isl_set_intersect($(isl_set* set1), $(isl_set* set2))
   } |]
 
-setUnion :: Ptr Set -> Ptr Set -> Ptr Set
-setUnion set1 set2 = [C.pure| isl_set* {
+setIntersect :: Ptr Set -> Ptr Set -> Ptr Set
+setIntersect set1 set2 = unsafeSetIntersect (setCopy set1) (setCopy set2)
+
+unsafeSetUnion :: Ptr Set -> Ptr Set -> Ptr Set
+unsafeSetUnion set1 set2 = [C.pure| isl_set* {
   isl_set_union($(isl_set* set1), $(isl_set* set2))
   } |]
 
-setSubtract :: Ptr Set -> Ptr Set -> Ptr Set
-setSubtract set1 set2 = [C.pure| isl_set* {
+setUnion :: Ptr Set -> Ptr Set -> Ptr Set
+setUnion set1 set2 = unsafeSetUnion (setCopy set1) (setCopy set2)
+
+unsafeSetSubtract :: Ptr Set -> Ptr Set -> Ptr Set
+unsafeSetSubtract set1 set2 = [C.pure| isl_set* {
   isl_set_subtract($(isl_set* set1), $(isl_set* set2))
   } |]
+
+setSubtract :: Ptr Set -> Ptr Set -> Ptr Set
+setSubtract set1 set2 = unsafeSetSubtract (setCopy set1) (setCopy set2)
 
 setCopy :: Ptr Set -> Ptr Set
 setCopy set = [C.pure| isl_set* { isl_set_copy($(isl_set* set)) } |]
@@ -96,10 +117,13 @@ setEmpty :: Ptr Space -> Ptr Set
 setEmpty space = [C.pure| isl_set* { isl_set_empty($(isl_space* space)) } |]
 
 -- | Create a universe set
-setUniverse :: Ptr Space -> Ptr Set
-setUniverse space = [C.pure| isl_set* {
+unsafeSetUniverse :: Ptr Space -> Ptr Set
+unsafeSetUniverse space = [C.pure| isl_set* {
   isl_set_universe($(isl_space* space))
   } |]
+
+setUniverse :: Ptr Space -> Ptr Set
+setUniverse = unsafeSetUniverse . spaceCopy
 
 -- | It is often useful to create objects that live in the same space as some
 -- other object. This can be accomplished by creating the new objects based on
@@ -118,18 +142,27 @@ setFree set = do
 setNBasicSet :: Ptr Set -> CInt
 setNBasicSet set = [C.pure| int { isl_set_n_basic_set($(isl_set* set)) } |]
 
+unsafeSetCoalesce :: Ptr Set -> Ptr Set
+unsafeSetCoalesce set = [C.pure| isl_set* { isl_set_coalesce($(isl_set* set)) } |]
+
 -- | Simplify the representation of a set by trying to combine pairs of basic
 -- sets into a single basic set.
 setCoalesce :: Ptr Set -> Ptr Set
-setCoalesce set = [C.pure| isl_set* { isl_set_coalesce($(isl_set* set)) } |]
+setCoalesce = unsafeSetCoalesce . setCopy
 
 -- | Projection
+unsafeSetParams :: Ptr Set -> Ptr Set
+unsafeSetParams set = [C.pure| isl_set* { isl_set_params($(isl_set* set)) } |]
+
 setParams :: Ptr Set -> Ptr Set
-setParams set = [C.pure| isl_set* { isl_set_params($(isl_set* set)) } |]
+setParams = unsafeSetParams . setCopy
+
+unsafeSetComplement :: Ptr Set -> Ptr Set
+unsafeSetComplement set = [C.pure| isl_set* { isl_set_complement($(isl_set* set)) } |]
 
 -- | Projection
 setComplement :: Ptr Set -> Ptr Set
-setComplement set = [C.pure| isl_set* { isl_set_complement($(isl_set* set)) } |]
+setComplement = unsafeSetComplement . setCopy
 
 setGetDimId :: Ptr Set -> DimType -> CUInt -> Ptr Id
 setGetDimId set ty pos =
@@ -143,8 +176,8 @@ setGetDimId set ty pos =
      )
      } |]
 
-setProjectOut :: Ptr Set -> DimType -> CUInt -> CUInt -> Ptr Set
-setProjectOut set ty first n =
+unsafeSetProjectOut :: Ptr Set -> DimType -> CUInt -> CUInt -> Ptr Set
+unsafeSetProjectOut set ty first n =
   let ty' :: CUInt
       ty' = toEnum $ fromEnum ty
   in [C.pure| isl_set* {
@@ -155,3 +188,9 @@ setProjectOut set ty first n =
        $(unsigned int n)
      )
      } |]
+
+setProjectOut :: Ptr Set -> DimType -> CUInt -> CUInt -> Ptr Set
+setProjectOut set ty first n = unsafeSetProjectOut (setCopy set) ty first n
+
+spaceCopy :: Ptr Space -> Ptr Space
+spaceCopy space = [C.pure| isl_space* { isl_space_copy($(isl_space* space)) } |]
