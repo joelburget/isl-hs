@@ -6,7 +6,7 @@ module InlineBindings
   ( test1
   , test2
 
-  , IslData(copy)
+  , IslData(copy, free)
 
   , unsafeSetIntersect
   , setIntersect
@@ -33,6 +33,7 @@ module InlineBindings
   , spaceCopy
   ) where
 
+import Control.Monad (void)
 import Foreign.Ptr
 import Foreign.C
 import qualified Language.C.Inline as C
@@ -51,15 +52,22 @@ C.include "<isl/space.h>"
 
 class IslData a where
   copy :: Ptr a -> Ptr a
+  free :: Ptr a -> IO ()
 
 instance IslData Set where
   copy = setCopy
+  free = setFree
 
 setCopy :: Ptr Set -> Ptr Set
 setCopy set = [C.pure| isl_set* { isl_set_copy($(isl_set* set)) } |]
 
+setFree :: Ptr Set -> IO ()
+setFree set = void [C.block| isl_set* { isl_set_free($(isl_set* set)); } |]
+
 instance IslData Space where
   copy = spaceCopy
+  free space
+    = void [C.block| isl_space* { isl_space_free($(isl_space* space)); } |]
 
 spaceCopy :: Ptr Space -> Ptr Space
 spaceCopy space = [C.pure| isl_space* { isl_space_copy($(isl_space* space)) } |]
@@ -147,11 +155,6 @@ setGetSpace :: Ptr Set -> Ptr Space
 setGetSpace set = [C.pure| isl_space* {
   isl_set_get_space($(isl_set* set))
   } |]
-
-setFree :: Ptr Set -> IO ()
-setFree set = do
-  _ <- [C.block| isl_set* { isl_set_free($(isl_set* set)); } |]
-  pure ()
 
 -- | The number of basic sets in a set can be obtained
 setNBasicSet :: Ptr Set -> CInt
