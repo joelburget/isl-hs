@@ -3,10 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module InlineBindings
-  ( test1
-  , test2
-
-  , IslData(copy, free)
+  ( IslData(copy, free)
 
   , unsafeSetIntersect
   , setIntersect
@@ -71,42 +68,6 @@ instance IslData Space where
 
 spaceCopy :: Ptr Space -> Ptr Space
 spaceCopy space = [C.pure| isl_space* { isl_space_copy($(isl_space* space)) } |]
-
-example1 :: String
-example1 = unlines
-  [ "[n] -> { [i,j] -> [i2,j2] : i2 = i + 1 and j2 = j + 1 and "
-  , "1 <= i and i < n and 1 <= j and j < n or "
-  , "i2 = i + 1 and j2 = j - 1 and "
-  , "1 <= i and i < n and 2 <= j and j <= n }"
-  ]
-
-test1 :: IO ()
-test1 = withCString example1 $ \example1' -> do
-  ctx <- ctxAlloc
-  exact <- [C.block| int {
-    int exact;
-    isl_map *map;
-
-    map = isl_map_read_from_str($(isl_ctx* ctx), $(char* example1'));
-    map = isl_map_power(map, &exact);
-    isl_map_free(map);
-    return exact;
-    } |]
-
-  print exact
-
-test2 :: IO ()
-test2 = withCString example1 $ \example1' -> do
-  ctx <- ctxAlloc
-  m <- [C.block| isl_map* {
-    isl_map *map;
-
-    map = isl_map_read_from_str($(isl_ctx* ctx), $(char* example1'));
-    // isl_map_free(map);
-    return map;
-    } |]
-  mapFree m
-  print m
 
 -- __isl_take: can no longer be used
 -- __isl_keep: only used temporarily
