@@ -1,7 +1,7 @@
 module Main where
 
 import ISL
-import InlineBindings
+import ISL.Types (DimType(..))
 
 example1 :: String
 example1 = unlines
