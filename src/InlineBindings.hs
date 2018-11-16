@@ -34,9 +34,9 @@ import Control.Monad (void)
 import Foreign.Ptr
 import Foreign.C
 import qualified Language.C.Inline as C
-import ISL (Map, Ctx, Set, BasicSet, LocalSpace, Space, Constraint, DimType,
-  Id, ctxAlloc, mapFree)
-import IslCtx (islCtx)
+
+import ISL.Types
+import ISL.Context (islCtx)
 
 C.context islCtx
 

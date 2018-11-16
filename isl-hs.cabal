@@ -16,8 +16,12 @@ extra-source-files:  CHANGELOG.md
 cabal-version:       >=1.10
 
 library
-  exposed-modules: ISL, InlineBindings
-  other-modules: IslCtx
+  exposed-modules:
+      ISL
+    , ISL.Context
+    , ISL.Types
+    , InlineBindings
+  -- other-modules:
   -- other-extensions:
   build-depends:
       base <5

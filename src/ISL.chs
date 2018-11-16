@@ -9,49 +9,35 @@ module ISL where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
-import Foreign.Marshal.Utils
 import Foreign.Storable
 import Foreign.C
 
--- import System.IO.Unsafe
--- import Control.Monad
--- import Control.Applicative ((<$>))
+import ISL.Types
 
--- type Ctx = {#type isl_ctx #}
-data Ctx
 type PtrCtx = Ptr Ctx
 {#pointer *isl_ctx as PtrCtx -> Ctx nocode #}
 
 {#fun isl_ctx_alloc as ctxAlloc {} -> `Ptr Ctx' id #}
 {#fun isl_ctx_free  as ctxFree { id `Ptr Ctx' } -> `()' #}
 
--- type Map = {#type isl_map #}
-data Map
 type PtrMap = Ptr Map
 {#pointer *isl_map as PtrMap -> Map nocode #}
 
--- type Set = {#type isl_set #}
-data Set
 type PtrSet = Ptr Set
 {#pointer *isl_set as PtrSet -> Set nocode #}
 
-data BasicSet
 type PtrBasicSet = Ptr BasicSet
 {#pointer *isl_basic_set as PtrBasicSet -> BasicSet nocode #}
 
-data LocalSpace
 type PtrLocalSpace = Ptr LocalSpace
 {#pointer *isl_local_space as PtrLocalSpace -> LocalSpace nocode #}
 
-data Space
 type PtrSpace = Ptr Space
 {#pointer *isl_space as PtrSpace -> Space nocode #}
 
-data Constraint
 type PtrConstraint = Ptr Constraint
 {#pointer *isl_constraint as PtrConstraint -> Constraint nocode #}
 
-data Id
 type PtrId = Ptr Id
 {#pointer *isl_id as PtrId -> Id nocode #}
 
@@ -75,11 +61,6 @@ type PtrId = Ptr Id
   { id `Ptr Map'
   , alloca- `CInt' peek*
   } -> `Ptr Map' id #}
-
-{#enum isl_dim_type as DimType {underscoreToCase} #}
-
-fromDimType :: DimType -> CInt
-fromDimType = fromIntegral . fromEnum
 
 {#fun isl_map_add_dims as mapAddDims
   { id `Ptr Map'

@@ -2,15 +2,16 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module IslCtx (islCtx) where
+module ISL.Context (islCtx) where
 
 import qualified Language.C.Inline as C
 import           Language.C.Inline.Context
 import qualified Language.C.Types as C
-import ISL (Map, Ctx, Set, BasicSet, LocalSpace, Space, Constraint, Id, DimType)
 import qualified Data.Map as Map
 import           Data.Monoid ((<>))
 import qualified Language.Haskell.TH as TH
+
+import ISL.Types
 
 islCtx :: C.Context
 islCtx = baseCtx <> bsCtx <> ctx
