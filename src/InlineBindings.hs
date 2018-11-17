@@ -145,24 +145,24 @@ setComplement = unsafeSetComplement . setCopy
 
 setGetDimId :: Ptr Set -> DimType -> CUInt -> Ptr Id
 setGetDimId set ty pos =
-  let ty' :: CUInt
-      ty' = toEnum $ fromEnum ty
+  let ty' :: CInt
+      ty' = fromDimType ty
   in [C.pure| isl_id* {
      isl_set_get_dim_id(
        $(isl_set* set),
-       isl_dim_type($(unsigned int ty')),
+       $(int ty'),
        $(unsigned int pos)
      )
      } |]
 
 unsafeSetProjectOut :: Ptr Set -> DimType -> CUInt -> CUInt -> Ptr Set
 unsafeSetProjectOut set ty first n =
-  let ty' :: CUInt
-      ty' = toEnum $ fromEnum ty
+  let ty' :: CInt
+      ty' = fromDimType ty
   in [C.pure| isl_set* {
      isl_set_project_out(
        $(isl_set* set),
-       isl_dim_type($(unsigned int ty')),
+       $(int ty'),
        $(unsigned int first),
        $(unsigned int n)
      )
