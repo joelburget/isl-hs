@@ -2,7 +2,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module InlineBindings
+-- | An inline-c based low-level interface to isl.
+module ISL.Native
   ( IslData(copy, free)
 
   , unsafeSetIntersect
@@ -35,8 +36,8 @@ import Foreign.Ptr
 import Foreign.C
 import qualified Language.C.Inline as C
 
-import ISL.Types
-import ISL.Context (islCtx)
+import ISL.Native.Context (islCtx)
+import ISL.Native.Types
 
 C.context islCtx
 

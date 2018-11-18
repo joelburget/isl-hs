@@ -1,6 +1,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module ISL.Types where
+-- | Types for the low-level interface to isl.
+module ISL.Native.Types where
 
 #include <isl/space.h>
 

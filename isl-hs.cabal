@@ -18,9 +18,11 @@ cabal-version:       >=1.10
 library
   exposed-modules:
       ISL
-    , ISL.Context
+    , ISL.Native
+    , ISL.Native.Context
+    , ISL.Native.C2Hs
+    , ISL.Native.Types
     , ISL.Types
-    , InlineBindings
   -- other-modules:
   -- other-extensions:
   build-depends:

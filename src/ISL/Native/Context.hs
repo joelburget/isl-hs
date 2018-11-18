@@ -2,7 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module ISL.Context (islCtx) where
+module ISL.Native.Context (islCtx) where
 
 import qualified Language.C.Inline as C
 import           Language.C.Inline.Context
@@ -11,7 +11,7 @@ import qualified Data.Map as Map
 import           Data.Monoid ((<>))
 import qualified Language.Haskell.TH as TH
 
-import ISL.Types
+import ISL.Native.Types
 
 islCtx :: C.Context
 islCtx = baseCtx <> bsCtx <> ctx

@@ -1,7 +1,7 @@
 module Main where
 
-import ISL
-import ISL.Types (DimType(..))
+import ISL.Native.C2Hs
+import ISL.Native.Types (DimType(..))
 
 example1 :: String
 example1 = unlines
