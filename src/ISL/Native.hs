@@ -4,8 +4,10 @@
 
 -- | An inline-c based low-level interface to isl.
 module ISL.Native
-  ( IslData(copy, free)
+  ( IslCopy(copy)
+  , IslFree(free)
 
+  , ctxFree
   , unsafeSetIntersect
   , setIntersect
   , unsafeSetUnion
@@ -29,6 +31,7 @@ module ISL.Native
   , setProjectOut
 
   , spaceCopy
+  , spaceFree
   ) where
 
 import Control.Monad (void)
@@ -48,13 +51,19 @@ C.include "<isl/map.h>"
 C.include "<isl/set.h>"
 C.include "<isl/space.h>"
 
-class IslData a where
+class IslCopy a where
   copy :: Ptr a -> Ptr a
+
+class IslFree a where
   free :: Ptr a -> IO ()
 
-instance IslData Set where
-  copy = setCopy
-  free = setFree
+instance IslFree Ctx where free = ctxFree
+
+ctxFree :: Ptr Ctx -> IO ()
+ctxFree ctx = [C.block| void { isl_ctx_free($(isl_ctx* ctx)); } |]
+
+instance IslCopy Set where copy = setCopy
+instance IslFree Set where free = setFree
 
 setCopy :: Ptr Set -> Ptr Set
 setCopy set = [C.pure| isl_set* { isl_set_copy($(isl_set* set)) } |]
@@ -62,13 +71,16 @@ setCopy set = [C.pure| isl_set* { isl_set_copy($(isl_set* set)) } |]
 setFree :: Ptr Set -> IO ()
 setFree set = void [C.block| isl_set* { isl_set_free($(isl_set* set)); } |]
 
-instance IslData Space where
-  copy = spaceCopy
-  free space
-    = void [C.block| isl_space* { isl_space_free($(isl_space* space)); } |]
+instance IslCopy Space where copy = spaceCopy
+instance IslFree Space where free = spaceFree
 
 spaceCopy :: Ptr Space -> Ptr Space
-spaceCopy space = [C.pure| isl_space* { isl_space_copy($(isl_space* space)) } |]
+spaceCopy space =
+  [C.pure| isl_space* { isl_space_copy($(isl_space* space)) } |]
+
+spaceFree :: Ptr Space -> IO ()
+spaceFree space = void
+  [C.block| isl_space* { isl_space_free($(isl_space* space)); } |]
 
 -- __isl_take: can no longer be used
 -- __isl_keep: only used temporarily
