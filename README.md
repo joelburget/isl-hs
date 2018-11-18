@@ -2,6 +2,8 @@
 
 In-progress Haskell bindings to the integer set library.
 
+<img src="https://travis-ci.org/joelburget/isl-hs.svg?branch=master" />
+
 ## Building the package
 
 * Run `nix-build release.nix`
