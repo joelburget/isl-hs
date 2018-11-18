@@ -7,6 +7,9 @@ module ISL.Native.Types where
 
 import Foreign.C (CInt)
 
+-- | A given context can only be used within a single thread, and all arguments
+-- to a function must be allocated within the same context. All objects
+-- allocated within a context should be freed before the context is freed.
 data Ctx
 
 -- | A single-space set of tuples that can be described as a conjunction of
