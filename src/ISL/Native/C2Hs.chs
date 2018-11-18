@@ -1,5 +1,8 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
-module ISL where
+
+-- | Prototype of a c2hs-based low-level interface. We will prefer a ISL.Native
+-- for now, which uses inline-c instead.
+module ISL.Native.C2Hs where
 
 #include <isl/ctx.h>
 #include <isl/constraint.h>
@@ -12,7 +15,7 @@ import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.C
 
-import ISL.Types
+import ISL.Native.Types
 
 type PtrCtx = Ptr Ctx
 {#pointer *isl_ctx as PtrCtx -> Ctx nocode #}
