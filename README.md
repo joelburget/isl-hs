@@ -2,7 +2,8 @@
 
 In-progress Haskell bindings to the integer set library.
 
-<img src="https://travis-ci.org/joelburget/isl-hs.svg?branch=master" />
+
+[![Build Status](https://travis-ci.org/joelburget/isl-hs.svg?branch=master)](https://travis-ci.org/joelburget/isl-hs)
 
 ## Building the package
 
