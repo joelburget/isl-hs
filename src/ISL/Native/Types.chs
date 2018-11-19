@@ -21,7 +21,7 @@ data Set
 
 -- | A single-space relation mapping tuples to tuples that can be described as
 -- a conjunction of affine constraints.
-data BasicMap -- TODO: unused so far.
+data BasicMap
 
 -- | A union of 'BasicMap's
 data Map

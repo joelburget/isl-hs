@@ -34,8 +34,23 @@ module ISL.Native
   , unsafeSetProjectOut
   , setProjectOut
 
+  , basicMapCopy
+  , basicMapFree
+
+  , mapCopy
+  , mapFree
+
+  , localSpaceCopy
+  , localSpaceFree
+
   , spaceCopy
   , spaceFree
+
+  , constraintCopy
+  , constraintFree
+
+  , idCopy
+  , idFree
   ) where
 
 import Control.Monad (void)
@@ -51,6 +66,7 @@ C.context islCtx
 C.include "<math.h>"
 C.include "<isl/ctx.h>"
 C.include "<isl/constraint.h>"
+C.include "<isl/id.h>"
 C.include "<isl/map.h>"
 C.include "<isl/set.h>"
 C.include "<isl/space.h>"
@@ -196,6 +212,43 @@ unsafeSetProjectOut set ty first n =
 setProjectOut :: Ptr Set -> DimType -> CUInt -> CUInt -> Ptr Set
 setProjectOut set ty first n = unsafeSetProjectOut (setCopy set) ty first n
 
+-- * BasicMap
+
+instance IslCopy BasicMap where copy = basicMapCopy
+instance IslFree BasicMap where free = basicMapFree
+
+basicMapCopy :: Ptr BasicMap -> Ptr BasicMap
+basicMapCopy bmap =
+  [C.pure| isl_basic_map* { isl_basic_map_copy($(isl_basic_map* bmap)) } |]
+
+basicMapFree :: Ptr BasicMap -> IO ()
+basicMapFree bmap = void
+  [C.block| isl_basic_map* { isl_basic_map_free($(isl_basic_map* bmap)); } |]
+
+-- * Map
+
+instance IslCopy Map where copy = mapCopy
+instance IslFree Map where free = mapFree
+
+mapCopy :: Ptr Map -> Ptr Map
+mapCopy map = [C.pure| isl_map* { isl_map_copy($(isl_map* map)) } |]
+
+mapFree :: Ptr Map -> IO ()
+mapFree map = void [C.block| isl_map* { isl_map_free($(isl_map* map)); } |]
+
+-- * LocalSpace
+
+instance IslCopy LocalSpace where copy = localSpaceCopy
+instance IslFree LocalSpace where free = localSpaceFree
+
+localSpaceCopy :: Ptr LocalSpace -> Ptr LocalSpace
+localSpaceCopy ls =
+  [C.pure| isl_local_space* { isl_local_space_copy($(isl_local_space* ls)) } |]
+
+localSpaceFree :: Ptr LocalSpace -> IO ()
+localSpaceFree ls = void
+  [C.block| isl_local_space* { isl_local_space_free($(isl_local_space* ls)); } |]
+
 -- * Space
 
 instance IslCopy Space where copy = spaceCopy
@@ -208,3 +261,27 @@ spaceCopy space =
 spaceFree :: Ptr Space -> IO ()
 spaceFree space = void
   [C.block| isl_space* { isl_space_free($(isl_space* space)); } |]
+
+-- * Constraint
+
+instance IslCopy Constraint where copy = constraintCopy
+instance IslFree Constraint where free = constraintFree
+
+constraintCopy :: Ptr Constraint -> Ptr Constraint
+constraintCopy c =
+  [C.pure| isl_constraint* { isl_constraint_copy($(isl_constraint* c)) } |]
+
+constraintFree :: Ptr Constraint -> IO ()
+constraintFree c = void
+  [C.block| isl_constraint* { isl_constraint_free($(isl_constraint* c)); } |]
+
+-- * Id
+
+instance IslCopy Id where copy = idCopy
+instance IslFree Id where free = idFree
+
+idCopy :: Ptr Id -> Ptr Id
+idCopy i = [C.pure| isl_id* { isl_id_copy($(isl_id* i)) } |]
+
+idFree :: Ptr Id -> IO ()
+idFree i = void [C.block| isl_id* { isl_id_free($(isl_id* i)); } |]
