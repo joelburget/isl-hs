@@ -8,6 +8,10 @@ module ISL.Native
   , IslFree(free)
 
   , ctxFree
+
+  , basicSetCopy
+  , basicSetFree
+
   , unsafeSetIntersect
   , setIntersect
   , unsafeSetUnion
@@ -61,6 +65,17 @@ instance IslFree Ctx where free = ctxFree
 
 ctxFree :: Ptr Ctx -> IO ()
 ctxFree ctx = [C.block| void { isl_ctx_free($(isl_ctx* ctx)); } |]
+
+instance IslCopy BasicSet where copy = basicSetCopy
+instance IslFree BasicSet where free = basicSetFree
+
+basicSetCopy :: Ptr BasicSet -> Ptr BasicSet
+basicSetCopy bset =
+  [C.pure| isl_basic_set* { isl_basic_set_copy($(isl_basic_set* bset)) } |]
+
+basicSetFree :: Ptr BasicSet -> IO ()
+basicSetFree bset = void
+  [C.block| isl_basic_set* { isl_basic_set_free($(isl_basic_set* bset)); } |]
 
 instance IslCopy Set where copy = setCopy
 instance IslFree Set where free = setFree
