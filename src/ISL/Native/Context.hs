@@ -24,6 +24,7 @@ islTypesTable :: Map.Map C.TypeSpecifier TH.TypeQ
 islTypesTable = Map.fromList
   [ (C.TypeName "isl_ctx",         [t| Ctx        |])
   , (C.TypeName "isl_map",         [t| Map        |])
+  , (C.TypeName "isl_basic_map",   [t| BasicMap   |])
   , (C.TypeName "isl_set",         [t| Set        |])
   , (C.TypeName "isl_basic_set",   [t| BasicSet   |])
   , (C.TypeName "isl_local_space", [t| LocalSpace |])
