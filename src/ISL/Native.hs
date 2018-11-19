@@ -61,10 +61,17 @@ class IslCopy a where
 class IslFree a where
   free :: Ptr a -> IO ()
 
+-- __isl_take: can no longer be used
+-- __isl_keep: only used temporarily
+
+-- * Ctx
+
 instance IslFree Ctx where free = ctxFree
 
 ctxFree :: Ptr Ctx -> IO ()
 ctxFree ctx = [C.block| void { isl_ctx_free($(isl_ctx* ctx)); } |]
+
+-- * BasicSet
 
 instance IslCopy BasicSet where copy = basicSetCopy
 instance IslFree BasicSet where free = basicSetFree
@@ -77,6 +84,8 @@ basicSetFree :: Ptr BasicSet -> IO ()
 basicSetFree bset = void
   [C.block| isl_basic_set* { isl_basic_set_free($(isl_basic_set* bset)); } |]
 
+-- * Set
+
 instance IslCopy Set where copy = setCopy
 instance IslFree Set where free = setFree
 
@@ -85,20 +94,6 @@ setCopy set = [C.pure| isl_set* { isl_set_copy($(isl_set* set)) } |]
 
 setFree :: Ptr Set -> IO ()
 setFree set = void [C.block| isl_set* { isl_set_free($(isl_set* set)); } |]
-
-instance IslCopy Space where copy = spaceCopy
-instance IslFree Space where free = spaceFree
-
-spaceCopy :: Ptr Space -> Ptr Space
-spaceCopy space =
-  [C.pure| isl_space* { isl_space_copy($(isl_space* space)) } |]
-
-spaceFree :: Ptr Space -> IO ()
-spaceFree space = void
-  [C.block| isl_space* { isl_space_free($(isl_space* space)); } |]
-
--- __isl_take: can no longer be used
--- __isl_keep: only used temporarily
 
 unsafeSetIntersect :: Ptr Set -> Ptr Set -> Ptr Set
 unsafeSetIntersect set1 set2 = [C.pure| isl_set* {
@@ -150,7 +145,8 @@ setNBasicSet :: Ptr Set -> CInt
 setNBasicSet set = [C.pure| int { isl_set_n_basic_set($(isl_set* set)) } |]
 
 unsafeSetCoalesce :: Ptr Set -> Ptr Set
-unsafeSetCoalesce set = [C.pure| isl_set* { isl_set_coalesce($(isl_set* set)) } |]
+unsafeSetCoalesce set =
+  [C.pure| isl_set* { isl_set_coalesce($(isl_set* set)) } |]
 
 -- | Simplify the representation of a set by trying to combine pairs of basic
 -- sets into a single basic set.
@@ -165,7 +161,8 @@ setParams :: Ptr Set -> Ptr Set
 setParams = unsafeSetParams . setCopy
 
 unsafeSetComplement :: Ptr Set -> Ptr Set
-unsafeSetComplement set = [C.pure| isl_set* { isl_set_complement($(isl_set* set)) } |]
+unsafeSetComplement set =
+  [C.pure| isl_set* { isl_set_complement($(isl_set* set)) } |]
 
 -- | Projection
 setComplement :: Ptr Set -> Ptr Set
@@ -198,3 +195,16 @@ unsafeSetProjectOut set ty first n =
 
 setProjectOut :: Ptr Set -> DimType -> CUInt -> CUInt -> Ptr Set
 setProjectOut set ty first n = unsafeSetProjectOut (setCopy set) ty first n
+
+-- * Space
+
+instance IslCopy Space where copy = spaceCopy
+instance IslFree Space where free = spaceFree
+
+spaceCopy :: Ptr Space -> Ptr Space
+spaceCopy space =
+  [C.pure| isl_space* { isl_space_copy($(isl_space* space)) } |]
+
+spaceFree :: Ptr Space -> IO ()
+spaceFree space = void
+  [C.block| isl_space* { isl_space_free($(isl_space* space)); } |]
