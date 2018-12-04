@@ -22,15 +22,16 @@ islCtx = baseCtx <> bsCtx <> ctx
 
 islTypesTable :: Map.Map C.TypeSpecifier TH.TypeQ
 islTypesTable = Map.fromList
-  [ (C.TypeName "isl_ctx",         [t| Ctx        |])
-  , (C.TypeName "isl_map",         [t| Map        |])
-  , (C.TypeName "isl_basic_map",   [t| BasicMap   |])
-  , (C.TypeName "isl_set",         [t| Set        |])
-  , (C.TypeName "isl_basic_set",   [t| BasicSet   |])
-  , (C.TypeName "isl_local_space", [t| LocalSpace |])
-  , (C.TypeName "isl_space",       [t| Space      |])
-  , (C.TypeName "isl_constraint",  [t| Constraint |])
-  , (C.TypeName "isl_id",          [t| Id         |])
-  , (C.TypeName "isl_dim_type",    [t| DimType    |])
-  , (C.TypeName "isl_bool",        [t| Bool       |])
+  [ (C.TypeName "isl_ctx",            [t| Ctx          |])
+  , (C.TypeName "isl_map",            [t| Map          |])
+  , (C.TypeName "isl_basic_map",      [t| BasicMap     |])
+  , (C.TypeName "isl_set",            [t| Set          |])
+  , (C.TypeName "isl_basic_set",      [t| BasicSet     |])
+  , (C.TypeName "isl_basic_set_list", [t| BasicSetList |])
+  , (C.TypeName "isl_local_space",    [t| LocalSpace   |])
+  , (C.TypeName "isl_space",          [t| Space        |])
+  , (C.TypeName "isl_constraint",     [t| Constraint   |])
+  , (C.TypeName "isl_id",             [t| Id           |])
+  , (C.TypeName "isl_dim_type",       [t| DimType      |])
+  , (C.TypeName "isl_bool",           [t| Bool         |])
   ]
