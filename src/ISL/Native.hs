@@ -1,6 +1,7 @@
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE QuasiQuotes           #-}
+{-# LANGUAGE TemplateHaskell       #-}
 
 -- | An inline-c based low-level interface to isl.
 module ISL.Native
@@ -16,8 +17,6 @@ module ISL.Native
   , basicSetCopy
   , basicSetFree
 
-  , unsafeSetIntersect
-  , setIntersect
   , unsafeSetUnion
   , setUnion
   , unsafeSetSubtract
@@ -63,16 +62,13 @@ module ISL.Native
   , idFree
 
   -- * binary operations
-  , unsafeLocalSpaceIntersect
-  , localSpaceIntersect
-  , unsafeBasicSetIntersectParams
-  , basicSetIntersectParams
-  , unsafeBasicSetIntersect
-  , basicSetIntersect
-  , unsafeBasicSetListIntersect
-  , unsafeSetIntersectParams
-  , setIntersectParams
+  , Intersect      (unsafeIntersect      ), intersect
+  , IntersectParams(unsafeIntersectParams), intersectParams
+  , IntersectDomain(unsafeIntersectDomain), intersectDomain
+  , IntersectRange (unsafeIntersectRange ), intersectRange
   ) where
+
+import Prelude hiding (map)
 
 import Control.Monad (void)
 import Foreign.Ptr
@@ -363,42 +359,56 @@ idFree (Once i) = void [C.block| isl_id* { isl_id_free($(isl_id* i)); } |]
 
 -- binary operations
 
-unsafeLocalSpaceIntersect
-  :: Take LocalSpace -> Take LocalSpace -> Give LocalSpace
-unsafeLocalSpaceIntersect (Once ls1) (Once ls2) = [C.pure| isl_local_space* {
-  isl_local_space_intersect(
-    $(isl_local_space* ls1),
-    $(isl_local_space* ls2)
-  )
-  } |]
+class (IslCopy a, IslCopy b) => Intersect a b c where
+  unsafeIntersect :: Take a -> Take b -> Give c
 
-localSpaceIntersect :: Keep LocalSpace -> Keep LocalSpace -> Give LocalSpace
-localSpaceIntersect ls1 ls2 = unsafeLocalSpaceIntersect (copy' ls1) (copy' ls2)
+intersect :: Intersect a b c => Keep a -> Keep b -> Give c
+intersect a b = unsafeIntersect (copy' a) (copy' b)
 
-unsafeBasicSetIntersectParams
-  :: Keep BasicSet -> Keep BasicSet -> Give BasicSet
-unsafeBasicSetIntersectParams bset1 bset2 = [C.pure| isl_basic_set* {
-  isl_basic_set_intersect_params(
-    $(isl_basic_set* bset1),
-    $(isl_basic_set* bset2)
-  )
-  } |]
+class (IslCopy a, IslCopy b) => IntersectParams a b c where
+  unsafeIntersectParams :: Take a -> Take b -> Give c
 
-basicSetIntersectParams :: Keep BasicSet -> Keep BasicSet -> Give BasicSet
-basicSetIntersectParams bset1 bset2
-  = unsafeBasicSetIntersectParams (basicSetCopy bset1) (basicSetCopy bset2)
+intersectParams :: IntersectParams a b c => Keep a -> Keep b -> Give c
+intersectParams a b = unsafeIntersectParams (copy' a) (copy' b)
 
-unsafeBasicSetIntersect :: Keep BasicSet -> Keep BasicSet -> Give BasicSet
-unsafeBasicSetIntersect bset1 bset2 = [C.pure| isl_basic_set* {
-  isl_basic_set_intersect(
-    $(isl_basic_set* bset1),
-    $(isl_basic_set* bset2)
-  )
-  } |]
+class (IslCopy a, IslCopy b) => IntersectDomain a b c where
+  unsafeIntersectDomain :: Take a -> Take b -> Give c
 
-basicSetIntersect :: Keep BasicSet -> Keep BasicSet -> Give BasicSet
-basicSetIntersect bset1 bset2
-  = unsafeBasicSetIntersect (basicSetCopy bset1) (basicSetCopy bset2)
+intersectDomain :: IntersectDomain a b c => Keep a -> Keep b -> Give c
+intersectDomain a b = unsafeIntersectDomain (copy' a) (copy' b)
+
+class (IslCopy a, IslCopy b) => IntersectRange a b c where
+  unsafeIntersectRange :: Take a -> Take b -> Give c
+
+intersectRange :: IntersectRange a b c => Keep a -> Keep b -> Give c
+intersectRange a b = unsafeIntersectRange (copy' a) (copy' b)
+
+instance Intersect LocalSpace LocalSpace LocalSpace where
+  unsafeIntersect (Once ls1) (Once ls2) =
+    [C.pure| isl_local_space* {
+      isl_local_space_intersect(
+        $(isl_local_space* ls1),
+        $(isl_local_space* ls2)
+      )
+    } |]
+
+instance IntersectParams BasicSet BasicSet BasicSet where
+  unsafeIntersectParams (Once bset1) (Once bset2) =
+    [C.pure| isl_basic_set* {
+      isl_basic_set_intersect_params(
+        $(isl_basic_set* bset1),
+        $(isl_basic_set* bset2)
+      )
+    } |]
+
+instance Intersect BasicSet BasicSet BasicSet where
+  unsafeIntersect (Once bset1) (Once bset2) =
+    [C.pure| isl_basic_set* {
+      isl_basic_set_intersect(
+        $(isl_basic_set* bset1),
+        $(isl_basic_set* bset2)
+      )
+    } |]
 
 unsafeBasicSetListIntersect :: Take BasicSetList -> Give BasicSet
 unsafeBasicSetListIntersect (Once list) =
@@ -410,23 +420,264 @@ unsafeBasicSetListIntersect (Once list) =
 -- basicSetListIntersect :: Ptr BasicSetList -> Ptr BasicSet
 -- basicSetListIntersect = undefined
 
-unsafeSetIntersectParams :: Take Set -> Take Set -> Give Set
-unsafeSetIntersectParams (Once set) (Once params) = [C.pure| isl_set* {
-  isl_set_intersect_params( $(isl_set* set), $(isl_set* params))
-  } |]
+instance IntersectParams Set Set Set where
+  unsafeIntersectParams (Once set) (Once params) =
+    [C.pure| isl_set* {
+      isl_set_intersect_params( $(isl_set* set), $(isl_set* params))
+    } |]
 
-setIntersectParams :: Keep Set -> Keep Set -> Keep Set
-setIntersectParams set params
-  = unsafeSetIntersectParams (copy' set) (copy' params)
+instance Intersect Set Set Set where
+  unsafeIntersect (Once set1) (Once set2) =
+    [C.pure| isl_set* {
+      isl_set_intersect($(isl_set* set1), $(isl_set* set2))
+    } |]
 
-unsafeSetIntersect :: Take Set -> Take Set -> Give Set
-unsafeSetIntersect (Once set1) (Once set2) = [C.pure| isl_set* {
-  isl_set_intersect($(isl_set* set1), $(isl_set* set2))
-  } |]
+instance IntersectDomain BasicMap BasicSet BasicMap where
+  unsafeIntersectDomain (Once bmap) (Once bset) =
+    [C.pure| isl_basic_map* {
+      isl_basic_map_intersect_domain(
+        $(isl_basic_map* bmap),
+        $(isl_basic_set* bset)
+      )
+    } |]
 
-setIntersect :: Keep Set -> Keep Set -> Give Set
-setIntersect set1 set2 = unsafeSetIntersect (copy' set1) (copy' set2)
+instance IntersectRange BasicMap BasicSet BasicMap where
+  unsafeIntersectRange (Once bmap) (Once bset) =
+    [C.pure| isl_basic_map* {
+      isl_basic_map_intersect_range(
+        $(isl_basic_map* bmap),
+        $(isl_basic_set* bset)
+      )
+    } |]
 
+-- TODO: isl_basic_map_list_intersect
+
+instance Intersect BasicMap BasicMap BasicMap where
+  unsafeIntersect (Once bmap1) (Once bmap2) =
+    [C.pure| isl_basic_map* {
+      isl_basic_map_intersect_range(
+        $(isl_basic_map* bmap1),
+        $(isl_basic_map* bmap2)
+      )
+    } |]
+
+instance IntersectDomain Map Set Map where
+  unsafeIntersectDomain (Once map) (Once set) =
+    [C.pure| isl_map* {
+      isl_map_intersect_domain(
+        $(isl_map* map),
+        $(isl_set* set)
+      )
+    } |]
+
+instance IntersectRange Map Set Map where
+  unsafeIntersectRange (Once map) (Once set) =
+    [C.pure| isl_map* {
+      isl_map_intersect_range(
+        $(isl_map* map),
+        $(isl_set* set)
+      )
+    } |]
+
+instance Intersect Map Map Map where
+  unsafeIntersect (Once map1) (Once map2) =
+    [C.pure| isl_map* {
+      isl_map_intersect_range(
+        $(isl_map* map1),
+        $(isl_map* map2)
+      )
+    } |]
+
+-- TODO:
+-- * isl_map_intersect_domain_factor_range
+-- * isl_map_intersect_range_factor_range
+
+instance IslCopy UnionSet where
+  copy uset = [C.pure| isl_union_set* { isl_union_set_copy($(isl_union_set* uset)) } |]
+
+instance IslFree UnionSet where
+  free (Once uset) = void
+    [C.block| isl_union_set* {
+      isl_union_set_free($(isl_union_set* uset));
+    } |]
+
+instance IntersectParams UnionSet Set UnionSet where
+  unsafeIntersectParams (Once uset) (Once set) =
+    [C.pure| isl_union_set* {
+      isl_set_intersect_params( $(isl_union_set* uset), $(isl_set* set))
+    } |]
+
+instance Intersect UnionSet UnionSet UnionSet where
+  unsafeIntersect (Once uset1) (Once uset2) =
+    [C.pure| isl_union_set* {
+      isl_set_intersect( $(isl_union_set* uset1), $(isl_union_set* uset2))
+    } |]
+
+instance IslCopy UnionMap where
+  copy umap = [C.pure| isl_union_map* { isl_union_map_copy($(isl_union_map* umap)) } |]
+
+instance IslFree UnionMap where
+  free (Once umap) = void
+    [C.block| isl_union_map* {
+      isl_union_map_free($(isl_union_map* umap));
+    } |]
+
+instance IntersectParams UnionMap Set UnionMap where
+  unsafeIntersectParams (Once umap) (Once set) =
+    [C.pure| isl_union_map* {
+      isl_union_map_intersect_params( $(isl_union_map* umap), $(isl_set* set))
+    } |]
+
+instance IntersectDomain UnionMap UnionSet UnionMap where
+  unsafeIntersectDomain (Once umap) (Once uset) =
+    [C.pure| isl_union_map* {
+      isl_union_map_intersect_domain(
+        $(isl_union_map* umap),
+        $(isl_union_set* uset)
+      )
+    } |]
+
+instance IntersectRange UnionMap UnionSet UnionMap where
+  unsafeIntersectRange (Once umap) (Once uset) =
+    [C.pure| isl_union_map* {
+      isl_union_map_intersect_range(
+        $(isl_union_map* umap),
+        $(isl_union_set* uset)
+      )
+    } |]
+
+instance Intersect UnionMap UnionMap UnionMap where
+  unsafeIntersect (Once umap1) (Once umap2) =
+    [C.pure| isl_union_map* {
+      isl_union_map_intersect( $(isl_union_map* umap1), $(isl_union_map* umap2))
+    } |]
+
+-- TODO: isl_union_map_intersect_range_factor_range
+
+instance IslCopy PwAff where
+  copy pa = [C.pure| isl_pw_aff* { isl_pw_aff_copy($(isl_pw_aff* pa)) } |]
+
+instance IslFree PwAff where
+  free (Once pa) = void
+    [C.block| isl_pw_aff* {
+      isl_pw_aff_free($(isl_pw_aff* pa));
+    } |]
+
+instance IntersectDomain PwAff Set PwAff where
+  unsafeIntersectDomain (Once pa) (Once set) =
+    [C.pure| isl_pw_aff* {
+      isl_pw_aff_intersect_domain(
+        $(isl_pw_aff* pa),
+        $(isl_set* set)
+      )
+    } |]
+
+instance IslCopy MultiPwAff where
+  copy pa =
+    [C.pure| isl_multi_pw_aff* {
+      isl_multi_pw_aff_copy($(isl_multi_pw_aff* pa))
+    } |]
+
+instance IslFree MultiPwAff where
+  free (Once pa) = void
+    [C.block| isl_multi_pw_aff* {
+      isl_multi_pw_aff_free($(isl_multi_pw_aff* pa));
+    } |]
+
+instance IntersectDomain MultiPwAff Set MultiPwAff where
+  unsafeIntersectDomain (Once mpa) (Once domain) =
+    [C.pure| isl_multi_pw_aff* {
+      isl_multi_pw_aff_intersect_domain(
+        $(isl_multi_pw_aff* mpa),
+        $(isl_set* domain)
+      )
+    } |]
+
+instance IslCopy PwMultiAff where
+  copy pa =
+    [C.pure| isl_pw_multi_aff* {
+      isl_pw_multi_aff_copy($(isl_pw_multi_aff* pa))
+    } |]
+
+instance IslFree PwMultiAff where
+  free (Once pa) = void
+    [C.block| isl_pw_multi_aff* {
+      isl_pw_multi_aff_free($(isl_pw_multi_aff* pa));
+    } |]
+
+instance IntersectDomain PwMultiAff Set PwMultiAff where
+  unsafeIntersectDomain (Once mpa) (Once set) =
+    [C.pure| isl_pw_multi_aff* {
+      isl_pw_multi_aff_intersect_domain(
+        $(isl_pw_multi_aff* mpa),
+        $(isl_set* set)
+      )
+    } |]
+
+instance IslCopy UnionPwAff where
+  copy pa =
+    [C.pure| isl_union_pw_aff* {
+      isl_union_pw_aff_copy($(isl_union_pw_aff* pa))
+    } |]
+
+instance IslFree UnionPwAff where
+  free (Once pa) = void
+    [C.block| isl_union_pw_aff* {
+      isl_union_pw_aff_free($(isl_union_pw_aff* pa));
+    } |]
+
+instance IntersectDomain UnionPwAff UnionSet UnionPwAff where
+  unsafeIntersectDomain (Once mpa) (Once uset) =
+    [C.pure| isl_union_pw_aff* {
+      isl_union_pw_aff_intersect_domain(
+        $(isl_union_pw_aff* mpa),
+        $(isl_union_set* uset)
+      )
+    } |]
+
+instance IslCopy UnionPwMultiAff where
+  copy pa =
+    [C.pure| isl_union_pw_multi_aff* {
+      isl_union_pw_multi_aff_copy($(isl_union_pw_multi_aff* pa))
+    } |]
+
+instance IslFree UnionPwMultiAff where
+  free (Once pa) = void
+    [C.block| isl_union_pw_multi_aff* {
+      isl_union_pw_multi_aff_free($(isl_union_pw_multi_aff* pa));
+    } |]
+
+instance IntersectDomain UnionPwMultiAff UnionSet UnionPwMultiAff where
+  unsafeIntersectDomain (Once mpa) (Once uset) =
+    [C.pure| isl_union_pw_multi_aff* {
+      isl_union_pw_multi_aff_intersect_domain(
+        $(isl_union_pw_multi_aff* mpa),
+        $(isl_union_set* uset)
+      )
+    } |]
+
+instance IslCopy MultiUnionPwAff where
+  copy pa =
+    [C.pure| isl_multi_union_pw_aff* {
+      isl_multi_union_pw_aff_copy($(isl_multi_union_pw_aff* pa))
+    } |]
+
+instance IslFree MultiUnionPwAff where
+  free (Once pa) = void
+    [C.block| isl_multi_union_pw_aff* {
+      isl_multi_union_pw_aff_free($(isl_multi_union_pw_aff* pa));
+    } |]
+
+instance IntersectDomain MultiUnionPwAff UnionSet MultiUnionPwAff where
+  unsafeIntersectDomain (Once mpa) (Once uset) =
+    [C.pure| isl_multi_union_pw_aff* {
+      isl_multi_union_pw_aff_intersect_domain(
+        $(isl_multi_union_pw_aff* mpa),
+        $(isl_union_set* uset)
+      )
+    } |]
+
+-- next: isl_pw_aff_intersect_params
 
 -- pwAffLeSet :: Ptr
 
