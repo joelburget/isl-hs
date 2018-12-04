@@ -62,6 +62,15 @@ data Id
 
 data BasicSetList
 
+data UnionSet
+data UnionMap
+data PwAff
+data MultiPwAff
+data PwMultiAff
+data UnionPwAff
+data UnionPwMultiAff
+data MultiUnionPwAff
+
 {#enum isl_dim_type as DimType {underscoreToCase} #}
 
 fromDimType :: DimType -> CInt
