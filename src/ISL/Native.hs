@@ -45,6 +45,12 @@ module ISL.Native
 
   , spaceCopy
   , spaceFree
+  , spaceIsEqual
+  , spaceHasEqualParams
+  , spaceHasEqualTuples
+  , spaceIsDomain
+  , spaceIsRange
+  , spaceTupleIsEqual
 
   , constraintCopy
   , constraintFree
@@ -261,6 +267,51 @@ spaceCopy space =
 spaceFree :: Ptr Space -> IO ()
 spaceFree space = void
   [C.block| isl_space* { isl_space_free($(isl_space* space)); } |]
+
+spaceIsEqual :: Ptr Space -> Ptr Space -> Bool
+spaceIsEqual space1 space2 =
+  [C.pure| isl_bool {
+    isl_space_is_equal($(isl_space* space1), $(isl_space* space2)); }
+  |]
+
+spaceHasEqualParams :: Ptr Space -> Ptr Space -> Bool
+spaceHasEqualParams space1 space2 =
+  [C.pure| isl_bool {
+    isl_space_has_equal_params($(isl_space* space1), $(isl_space* space2)); }
+  |]
+
+spaceHasEqualTuples :: Ptr Space -> Ptr Space -> Bool
+spaceHasEqualTuples space1 space2 =
+  [C.pure| isl_bool {
+    isl_space_has_equal_tuples($(isl_space* space1), $(isl_space* space2)); }
+  |]
+
+spaceIsDomain :: Ptr Space -> Ptr Space -> Bool
+spaceIsDomain space1 space2 =
+  [C.pure| isl_bool {
+    isl_space_is_domain($(isl_space* space1), $(isl_space* space2)); }
+  |]
+
+spaceIsRange :: Ptr Space -> Ptr Space -> Bool
+spaceIsRange space1 space2 =
+  [C.pure| isl_bool {
+    isl_space_is_range($(isl_space* space1), $(isl_space* space2)); }
+  |]
+
+spaceTupleIsEqual :: Ptr Space -> DimType -> Ptr Space -> DimType -> Bool
+spaceTupleIsEqual space1 type1 space2 type2 =
+  let type1' :: CInt
+      type1' = fromDimType type1
+      type2' :: CInt
+      type2' = fromDimType type2
+  in [C.pure| isl_bool {
+       isl_space_tuple_is_equal(
+         $(isl_space* space1),
+         $(int type1'),
+         $(isl_space* space2),
+         $(int type2')
+       )
+       } |]
 
 -- * Constraint
 

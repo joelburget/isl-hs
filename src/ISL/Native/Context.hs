@@ -32,4 +32,5 @@ islTypesTable = Map.fromList
   , (C.TypeName "isl_constraint",  [t| Constraint |])
   , (C.TypeName "isl_id",          [t| Id         |])
   , (C.TypeName "isl_dim_type",    [t| DimType    |])
+  , (C.TypeName "isl_bool",        [t| Bool       |])
   ]
