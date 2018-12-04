@@ -81,11 +81,13 @@ import ISL.Native.Types
 C.context islCtx
 
 C.include "<math.h>"
+C.include "<isl/aff.h>"
 C.include "<isl/ctx.h>"
 C.include "<isl/constraint.h>"
 C.include "<isl/id.h>"
 C.include "<isl/map.h>"
 C.include "<isl/set.h>"
+C.include "<isl/union_set.h>"
 C.include "<isl/space.h>"
 
 -- | A pointer that is only allowed to be used once
@@ -291,31 +293,31 @@ spaceFree (Once space) = void
 spaceIsEqual :: Keep Space -> Keep Space -> Bool
 spaceIsEqual space1 space2 =
   [C.pure| isl_bool {
-    isl_space_is_equal($(isl_space* space1), $(isl_space* space2)); }
+    isl_space_is_equal($(isl_space* space1), $(isl_space* space2)) }
   |]
 
 spaceHasEqualParams :: Keep Space -> Keep Space -> Bool
 spaceHasEqualParams space1 space2 =
   [C.pure| isl_bool {
-    isl_space_has_equal_params($(isl_space* space1), $(isl_space* space2)); }
+    isl_space_has_equal_params($(isl_space* space1), $(isl_space* space2)) }
   |]
 
 spaceHasEqualTuples :: Keep Space -> Keep Space -> Bool
 spaceHasEqualTuples space1 space2 =
   [C.pure| isl_bool {
-    isl_space_has_equal_tuples($(isl_space* space1), $(isl_space* space2)); }
+    isl_space_has_equal_tuples($(isl_space* space1), $(isl_space* space2)) }
   |]
 
 spaceIsDomain :: Keep Space -> Keep Space -> Bool
 spaceIsDomain space1 space2 =
   [C.pure| isl_bool {
-    isl_space_is_domain($(isl_space* space1), $(isl_space* space2)); }
+    isl_space_is_domain($(isl_space* space1), $(isl_space* space2)) }
   |]
 
 spaceIsRange :: Keep Space -> Keep Space -> Bool
 spaceIsRange space1 space2 =
   [C.pure| isl_bool {
-    isl_space_is_range($(isl_space* space1), $(isl_space* space2)); }
+    isl_space_is_range($(isl_space* space1), $(isl_space* space2)) }
   |]
 
 spaceTupleIsEqual :: Keep Space -> DimType -> Keep Space -> DimType -> Bool
@@ -413,7 +415,7 @@ instance Intersect BasicSet BasicSet BasicSet where
 unsafeBasicSetListIntersect :: Take BasicSetList -> Give BasicSet
 unsafeBasicSetListIntersect (Once list) =
   [C.pure| isl_basic_set* {
-    isl_basic_set_intersect($(isl_basic_set_list* list))
+    isl_basic_set_list_intersect($(isl_basic_set_list* list))
   } |]
 
 -- there's no way to copy an isl_basic_set_list
@@ -455,7 +457,7 @@ instance IntersectRange BasicMap BasicSet BasicMap where
 instance Intersect BasicMap BasicMap BasicMap where
   unsafeIntersect (Once bmap1) (Once bmap2) =
     [C.pure| isl_basic_map* {
-      isl_basic_map_intersect_range(
+      isl_basic_map_intersect(
         $(isl_basic_map* bmap1),
         $(isl_basic_map* bmap2)
       )
@@ -482,7 +484,7 @@ instance IntersectRange Map Set Map where
 instance Intersect Map Map Map where
   unsafeIntersect (Once map1) (Once map2) =
     [C.pure| isl_map* {
-      isl_map_intersect_range(
+      isl_map_intersect(
         $(isl_map* map1),
         $(isl_map* map2)
       )
@@ -504,13 +506,13 @@ instance IslFree UnionSet where
 instance IntersectParams UnionSet Set UnionSet where
   unsafeIntersectParams (Once uset) (Once set) =
     [C.pure| isl_union_set* {
-      isl_set_intersect_params( $(isl_union_set* uset), $(isl_set* set))
+      isl_union_set_intersect_params( $(isl_union_set* uset), $(isl_set* set))
     } |]
 
 instance Intersect UnionSet UnionSet UnionSet where
   unsafeIntersect (Once uset1) (Once uset2) =
     [C.pure| isl_union_set* {
-      isl_set_intersect( $(isl_union_set* uset1), $(isl_union_set* uset2))
+      isl_union_set_intersect( $(isl_union_set* uset1), $(isl_union_set* uset2))
     } |]
 
 instance IslCopy UnionMap where
