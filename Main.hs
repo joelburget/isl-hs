@@ -1,3 +1,4 @@
+{-# options_ghc -fno-warn-name-shadowing #-}
 module Main where
 
 import ISL.Native.C2Hs
