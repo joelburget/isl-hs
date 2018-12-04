@@ -57,6 +57,17 @@ module ISL.Native
 
   , idCopy
   , idFree
+
+  -- * binary operations
+  , unsafeLocalSpaceIntersect
+  , localSpaceIntersect
+  , unsafeBasicSetIntersectParams
+  , basicSetIntersectParams
+  , unsafeBasicSetIntersect
+  , basicSetIntersect
+  , unsafeBasicSetListIntersect
+  , unsafeSetIntersectParams
+  , setIntersectParams
   ) where
 
 import Control.Monad (void)
@@ -116,14 +127,6 @@ setCopy set = [C.pure| isl_set* { isl_set_copy($(isl_set* set)) } |]
 
 setFree :: Ptr Set -> IO ()
 setFree set = void [C.block| isl_set* { isl_set_free($(isl_set* set)); } |]
-
-unsafeSetIntersect :: Ptr Set -> Ptr Set -> Ptr Set
-unsafeSetIntersect set1 set2 = [C.pure| isl_set* {
-  isl_set_intersect($(isl_set* set1), $(isl_set* set2))
-  } |]
-
-setIntersect :: Ptr Set -> Ptr Set -> Ptr Set
-setIntersect set1 set2 = unsafeSetIntersect (setCopy set1) (setCopy set2)
 
 unsafeSetUnion :: Ptr Set -> Ptr Set -> Ptr Set
 unsafeSetUnion set1 set2 = [C.pure| isl_set* {
@@ -336,3 +339,78 @@ idCopy i = [C.pure| isl_id* { isl_id_copy($(isl_id* i)) } |]
 
 idFree :: Ptr Id -> IO ()
 idFree i = void [C.block| isl_id* { isl_id_free($(isl_id* i)); } |]
+
+-- binary operations
+
+unsafeLocalSpaceIntersect :: Ptr LocalSpace -> Ptr LocalSpace -> Ptr LocalSpace
+unsafeLocalSpaceIntersect ls1 ls2 = [C.pure| isl_local_space* {
+  isl_local_space_intersect(
+    $(isl_local_space* ls1),
+    $(isl_local_space* ls2)
+  )
+  } |]
+
+localSpaceIntersect :: Ptr LocalSpace -> Ptr LocalSpace -> Ptr LocalSpace
+localSpaceIntersect ls1 ls2 = unsafeLocalSpaceIntersect ls1 ls2
+
+unsafeBasicSetIntersectParams :: Ptr BasicSet -> Ptr BasicSet -> Ptr BasicSet
+unsafeBasicSetIntersectParams bset1 bset2 = [C.pure| isl_basic_set* {
+  isl_basic_set_intersect_params(
+    $(isl_basic_set* bset1),
+    $(isl_basic_set* bset2)
+  )
+  } |]
+
+basicSetIntersectParams :: Ptr BasicSet -> Ptr BasicSet -> Ptr BasicSet
+basicSetIntersectParams bset1 bset2
+  = unsafeBasicSetIntersectParams (basicSetCopy bset1) (basicSetCopy bset2)
+
+unsafeBasicSetIntersect :: Ptr BasicSet -> Ptr BasicSet -> Ptr BasicSet
+unsafeBasicSetIntersect bset1 bset2 = [C.pure| isl_basic_set* {
+  isl_basic_set_intersect(
+    $(isl_basic_set* bset1),
+    $(isl_basic_set* bset2)
+  )
+  } |]
+
+basicSetIntersect :: Ptr BasicSet -> Ptr BasicSet -> Ptr BasicSet
+basicSetIntersect bset1 bset2
+  = unsafeBasicSetIntersect (basicSetCopy bset1) (basicSetCopy bset2)
+
+unsafeBasicSetListIntersect :: Ptr BasicSetList -> Ptr BasicSet
+unsafeBasicSetListIntersect list =
+  [C.pure| isl_basic_set* {
+    isl_basic_set_intersect($(isl_basic_set_list* list))
+  } |]
+
+-- there's no way to copy an isl_basic_set_list
+-- basicSetListIntersect :: Ptr BasicSetList -> Ptr BasicSet
+-- basicSetListIntersect = undefined
+
+unsafeSetIntersectParams :: Ptr Set -> Ptr Set -> Ptr Set
+unsafeSetIntersectParams set params = [C.pure| isl_set* {
+  isl_set_intersect_params( $(isl_set* set), $(isl_set* params))
+  } |]
+
+setIntersectParams :: Ptr Set -> Ptr Set -> Ptr Set
+setIntersectParams set params
+  = unsafeSetIntersectParams (setCopy set) (setCopy params)
+
+unsafeSetIntersect :: Ptr Set -> Ptr Set -> Ptr Set
+unsafeSetIntersect set1 set2 = [C.pure| isl_set* {
+  isl_set_intersect($(isl_set* set1), $(isl_set* set2))
+  } |]
+
+setIntersect :: Ptr Set -> Ptr Set -> Ptr Set
+setIntersect set1 set2 = unsafeSetIntersect (setCopy set1) (setCopy set2)
+
+
+
+-- pwAffLeSet :: Ptr
+
+-- __isl_give isl_set *isl_pw_aff_le_set(
+--                 __isl_take isl_pw_aff *pwaff1,
+--                 __isl_take isl_pw_aff *pwaff2);
+--         __isl_give isl_set *isl_pw_aff_lt_set(
+--                 __isl_take isl_pw_aff *pwaff1,
+--                 __isl_take isl_pw_aff *pwaff2);
